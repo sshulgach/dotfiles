@@ -10,5 +10,14 @@
 
 # Change these to your own details, obviously
 [user]
-	name = Jason Rhodes
-	email = jason.matthew.rhodes@gmail.com
+	name = Eric Conrad
+	email = eric.jeffrey.conrad@gmail.com
+[filter "media"]
+	required = true
+	clean = git media clean %f
+	smudge = git media smudge %f
+[push]
+	default = upstream
+[core]
+	editor = subl -n -w
+	excludesfile = /Users/ericconrad/.gitignore_global
