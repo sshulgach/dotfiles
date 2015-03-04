@@ -7,250 +7,15 @@ export GIT_MERGE_AUTOEDIT=no
 # Change default installation for ruby gems
 export GEM_HOME=$HOME/.ruby/default
 
-# Command Prompt (possibly overwritten later with colored Git prompt)
-# export PS1="\W $ "
-
 # Custom Aliases
 alias ..="cd .."
 alias bp="source ~/.bash_profile"
-alias brkt="open -a \"Brackets\" $*"
 alias gs="git st"
-alias jhu="cd ~/www/jhu/"
 alias la="ls -la"
-alias machado="cd ~/www/jhu/public/assets/themes/machado"
-defaultWebBrowser="Google Chrome"
-defaultEditingAppOpenCommand="atom"
-defaultEditingAppFullName="Atom"
-
-password="YOURPASSWORD"
-
-function new-terminal-tab () {
-  projectDirectory=$(pwd)
-  echo "Project directory set to \"$projectDirectory\""
-
-  osascript -e "tell application \"System Events\" to tell process \"Terminal\" to keystroke \"t\" using command down"\
-            -e "tell application \"Terminal\" to do script \"cd $projectDirectory\" in selected tab of the front window"
-}
-
-function prepare-browser () {
-  browser=""
-
-  if [ $1 ]; then
-    if [ $1 = "chrome" ] || [ $1 = "Chrome" ] || [ $1 = "Google Chrome" ] || [ $1 = "Google\ Chrome" ]; then
-      browser="Google Chrome"
-      echo "Browser set to \"$browser\""
-    elif [ $1 = "safari" ] || [ $1 = "Safari" ]; then
-      browser="Safari"
-      echo "Browser set to \"$browser\""
-    elif [ $1 = "firefox" ] || [ $1 = "Firefox" ]; then
-      browser="Firefox"
-      echo "Browser set to \"$browser\""
-    else
-      browser="$1"
-      echo "Browser set to \"$browser\""
-    fi
-  else
-    browser="$defaultWebBrowser"
-    echo "Browser defaulted to \"$browser\""
-  fi
-
-  osascript -e "set B to \"$browser\""\
-            -e "tell application B to activate"
-}
-
-function define-project-server () {
-  projectServer=""
-  projectURL=""
-
-  if [ $1 ]; then
-    projectServer="localhost:$1"
-    echo "Project server set to \"$projectServer\""
-  else
-    projectServer="localhost:4000"
-    echo "Project server defaulted to \"$projectServer\""
-  fi
-
-  projectURL="http://$projectServer/"
-  echo "Project URL set to \"$projectURL\""
-}
-
-function launch-project-server () {
-  define-project-server $1
-
-  php -S $projectServer -t public/
-}
-
-function launch-project-browser () {
-  define-project-server $1
-
-  prepare-browser $2
-
-  osascript -e "tell application \"$browser\" to open location \"$projectURL\""
-}
-
-function which-editor () {
-  appOpenCommand=""
-  appFullName=""
-
-  if [ $1 ]; then
-    if [ $1 = "subl" ] || [ $1 = "Sublime" ] || [ $1 = "Sublime Test" ] || [ $1 = "Sublime\ Text" ]; then
-      appOpenCommand="subl"
-      appFullName="Sublime Text"
-      echo "Editing app set to \"$appFullName\""
-    elif [ $1 = "atom" ] || [ $1 = "Atom" ]; then
-      appOpenCommand="atom"
-      appFullName="Atom"
-      echo "Editing app set to \"$appFullName\""
-    elif [ $1 = "brkt" ] || [ $1 = "brackets" ] || [ $1 = "Brackets"]; then
-      appOpenCommand="brkt"
-      appFullName="Brackets"
-      echo "Editing app set to \"$appFullName\""
-    else
-      appOpenCommand="$1"
-      echo "Editing app set to \"$appOpenCommand\""
-    fi
-  else
-    appOpenCommand="$defaultEditingAppOpenCommand"
-    appFullName="$defaultEditingAppFullName"
-    echo "Editing app defaulted to \"$appFullName\""
-  fi
-}
-
-function open-project () {
-  which-editor $1
-
-  osascript -e "tell application \"Terminal\" to do script \"$appOpenCommand .\" in selected tab of the front window"
-}
-
-function project-go () {
-  if [ ! -d "./public" ]; then
-    gulp
-  fi
-
-  osascript -e "tell application \"Terminal\" to activate"\
-            -e "tell application \"Terminal\" to do script \"launch-project-server $1\" in selected tab of the front window"
-
-  new-terminal-tab
-
-  osascript -e "tell application \"Terminal\" to do script \"gulp watch\" in selected tab of the front window"
-
-	new-terminal-tab
-
-  osascript -e "tell application \"Terminal\" to do script \"launch-project-browser $1 $3\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"open-project $2\" in selected tab of the front window"
-}
-
-function open-jhu-where () {
-  if [ $1 ]; then
-    if [ $1 = machado ] || [ $1 = Machado ]; then
-      machado
-      echo "Opening machado directory"
-    elif [ $1 = jhu ] || [ $1 = JHU ]; then
-      jhu
-      echo "Opening jhu directory"
-    else
-      $1
-      echo "Attempting to open $1 directory"
-    fi
-  else
-    machado
-    echo "Opening machado directory"
-  fi
-}
-
-function launch-jhu-browser () {
-  prepare-browser $1
-
-  osascript -e "tell application \"$browser\" to open location \"http://local.jhu.edu\""
-}
-
-function jhu-go () {
-  osascript -e "tell application \"Terminal\" to activate"\
-            -e "tell application \"Terminal\" to do script \"jhu\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"vagrant up --provision\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"$password\" in selected tab of the front window"
-
-  new-terminal-tab
-
-  osascript -e "tell application \"Terminal\" to do script \"machado\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"gulp watch\" in selected tab of the front window"
-
-  new-terminal-tab
-
-  osascript -e "tell application \"Terminal\" to do script \"open-jhu-where $1\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"launch-jhu-browser $3\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"open-project $2\" in selected tab of the front window"
-}
-
-function open-httpd-config () {
-  which-editor $1
-
-  osascript -e "tell application \"Terminal\" to do script \"$appOpenCommand ~/www/jhu/puppet/modules/httpd/files/etc/httpd/conf/httpd.conf\" in selected tab of the front window"
-}
-
-function open-wp-config () {
-  which-editor $1
-
-  osascript -e "tell application \"Terminal\" to do script \"$appOpenCommand ~/www/jhu/config/wp-config.php\" in selected tab of the front window"
-}
-
-function restart-httpd () {
-  osascript -e "tell application \"Terminal\" to do script \"vagrant ssh\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"sudo service httpd restart\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"exit\" in selected tab of the front window"
-}
-
-function restart-memcached () {
-  osascript -e "tell application \"Terminal\" to do script \"vagrant ssh\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"sudo service memcached restart\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"exit\" in selected tab of the front window"
-}
-
-function restart-supervisord () {
-  osascript -e "tell application \"Terminal\" to do script \"vagrant ssh\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"sudo service supervisord restart\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"exit\" in selected tab of the front window"
-}
-
-function jhu-share () {
-  osascript -e "tell application \"Terminal\" to activate"\
-            -e "tell application \"Terminal\" to do script \"jhu\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"vagrant share\" in selected tab of the front window"
-
-  new-terminal-tab
-
-  osascript -e "tell application \"Terminal\" to do script \"open-wp-config $1\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"open-httpd-config $1\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"restart-httpd\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"restart-memcached\" in selected tab of the front window"
-}
-
-# alias stopmysql="sudo launchctl unload -w /Library/LaunchDaemons/com.mysql.mysqld.plist"
-# alias startmysql="sudo launchctl load -w /Library/LaunchDaemons/com.mysql.mysqld.plist"
 
 # Show/hide hidden files
 alias showhiddenfiles="defaults write com.apple.Finder AppleShowAllFiles TRUE && killall Finder && open /System/Library/CoreServices/Finder.app"
 alias hidehiddenfiles="defaults write com.apple.Finder AppleShowAllFiles FALSE && killall Finder && open /System/Library/CoreServices/Finder.app"
-
-# Download ALL images from Hub production database. Hint: You have to be on JHU network or VPN
-# alias gethubimages="mkdir -p ~/vhosts/hub/public/factory/sites/default/files && scp webuser@esgjhumktgprod.esg.johnshopkins.edu:/var/www/html/hub/shared/files/* ~/vhosts/hub/public/factory/sites/default/files"
-
-
-# Git Aliases (kept in .gitconfig)
-
-# SSH Aliases
-alias sshstaging="ssh econrad2@esgjhumktgst.esg.johnshopkins.edu"
-alias sshwebuserstaging="ssh webuser@esgjhumktgst.esg.johnshopkins.edu"
-alias sshprod="ssh econrad2@esgjhumktgprod.esg.johnshopkins.edu"
-alias sshwebuserprod="ssh webuser@esgjhumktgprod.esg.johnshopkins.edu"
-
-
-# RVM
-# [[ -s "$HOME/.rvm/scripts/rvm" ]] && source "$HOME/.rvm/scripts/rvm"
-# [[ -s "$HOME/.rvm/scripts/rvm/scripts/rvm" ]] && . "$HOME/.rvm/scripts/rvm/scripts/rvm" # Load RVM function
-
-# rbenv (the better ruby version manager, IMO)
-# if which rbenv > /dev/null; then eval "$(rbenv init -)"; fi
 
 ##
 # Bash completion scripts
@@ -287,7 +52,7 @@ NO_COLOR="\[\e[0m\]"
 
 ##
 # Git shell prompt
-#   requires Git bash completion to be installed
+# requires Git bash completion to be installed
 ##
 function parse_git_branch {
   git branch --no-color 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
@@ -302,13 +67,3 @@ source `xcode-select --print-path`/usr/share/git-core/git-prompt.sh
 export PS1="${CYAN}\u@\h${WHITE}[${YELLOW}\w${WHITE}]\$(__git_ps1 '${WHITE}[${BOLD_GREEN}%s${BOLD_RED}'\$(parse_git_dirty)'${WHITE}]')${WHITE}${NO_COLOR} $ "
 export PS2=" > "
 export PS4=" + "
-
-# export GIT_PS1_SHOWDIRTYSTATE="1"
-
-# export PS1="${CYAN}\u@\h${WHITE}[${YELLOW}\w${WHITE}] $(__git_ps1)${NO_COLOR} $ "
-# export PS2=" > "
-# export PS4=" + "
-
-
-### Added by the Heroku Toolbelt
-# export PATH="/usr/local/heroku/bin:$PATH"
