@@ -22,5 +22,9 @@
 [push]
 	default = upstream
 [core]
-	editor = subl -n -w
+	editor = atom -n -w
 	excludesfile = /Users/ericconrad/.gitignore_global
+[filter "hawser"]
+	clean = git hawser clean %f
+	smudge = git hawser smudge %f
+	required = true
