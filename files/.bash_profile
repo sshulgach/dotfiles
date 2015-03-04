@@ -18,6 +18,11 @@ alias gs="git st"
 alias jhu="cd ~/www/jhu/"
 alias la="ls -la"
 alias machado="cd ~/www/jhu/public/assets/themes/machado"
+defaultWebBrowser="Google Chrome"
+defaultEditingAppOpenCommand="atom"
+defaultEditingAppFullName="Atom"
+
+password="YOURPASSWORD"
 
 function new-terminal-tab () {
   projectDirectory=$(pwd)
@@ -45,7 +50,7 @@ function prepare-browser () {
       echo "Browser set to \"$browser\""
     fi
   else
-    browser="Google Chrome"
+    browser="$defaultWebBrowser"
     echo "Browser defaulted to \"$browser\""
   fi
 
@@ -71,7 +76,7 @@ function define-project-server () {
 
 function launch-project-server () {
   define-project-server $1
-  
+
   php -S $projectServer -t public/
 }
 
@@ -83,7 +88,7 @@ function launch-project-browser () {
   osascript -e "tell application \"$browser\" to open location \"$projectURL\""
 }
 
-function open-project () {
+function which-editor () {
   appOpenCommand=""
   appFullName=""
 
@@ -101,21 +106,23 @@ function open-project () {
       appFullName="Brackets"
       echo "Editing app set to \"$appFullName\""
     else
-      browser="$1"
-      echo "Editing app set to \"$appFullName\""
+      appOpenCommand="$1"
+      echo "Editing app set to \"$appOpenCommand\""
     fi
-    appFullName="$1"
-    echo "Editing app set to \"$appFullName\""
   else
-    appOpenCommand="subl"
-    appFullName="Sublime Text"
+    appOpenCommand="$defaultEditingAppOpenCommand"
+    appFullName="$defaultEditingAppFullName"
     echo "Editing app defaulted to \"$appFullName\""
   fi
+}
+
+function open-project () {
+  which-editor $1
 
   osascript -e "tell application \"Terminal\" to do script \"$appOpenCommand .\" in selected tab of the front window"
 }
 
-function project-GO () {
+function project-go () {
   if [ ! -d "./public" ]; then
     gulp
   fi
@@ -141,7 +148,7 @@ function open-jhu-where () {
     elif [ $1 = jhu ] || [ $1 = JHU ]; then
       jhu
       echo "Opening jhu directory"
-    else 
+    else
       $1
       echo "Attempting to open $1 directory"
     fi
@@ -157,11 +164,11 @@ function launch-jhu-browser () {
   osascript -e "tell application \"$browser\" to open location \"http://local.jhu.edu\""
 }
 
-function jhu-GO () {
+function jhu-go () {
   osascript -e "tell application \"Terminal\" to activate"\
             -e "tell application \"Terminal\" to do script \"jhu\" in selected tab of the front window"\
             -e "tell application \"Terminal\" to do script \"vagrant up --provision\" in selected tab of the front window"\
-            -e "tell application \"Terminal\" to do script \"YOUR PASSWORD\" in selected tab of the front window"
+            -e "tell application \"Terminal\" to do script \"$password\" in selected tab of the front window"
 
   new-terminal-tab
 
@@ -173,6 +180,49 @@ function jhu-GO () {
   osascript -e "tell application \"Terminal\" to do script \"open-jhu-where $1\" in selected tab of the front window"\
             -e "tell application \"Terminal\" to do script \"launch-jhu-browser $3\" in selected tab of the front window"\
             -e "tell application \"Terminal\" to do script \"open-project $2\" in selected tab of the front window"
+}
+
+function open-httpd-config () {
+  which-editor $1
+
+  osascript -e "tell application \"Terminal\" to do script \"$appOpenCommand ~/www/jhu/puppet/modules/httpd/files/etc/httpd/conf/httpd.conf\" in selected tab of the front window"
+}
+
+function open-wp-config () {
+  which-editor $1
+
+  osascript -e "tell application \"Terminal\" to do script \"$appOpenCommand ~/www/jhu/config/wp-config.php\" in selected tab of the front window"
+}
+
+function restart-httpd () {
+  osascript -e "tell application \"Terminal\" to do script \"vagrant ssh\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"sudo service httpd restart\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"exit\" in selected tab of the front window"
+}
+
+function restart-memcached () {
+  osascript -e "tell application \"Terminal\" to do script \"vagrant ssh\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"sudo service memcached restart\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"exit\" in selected tab of the front window"
+}
+
+function restart-supervisord () {
+  osascript -e "tell application \"Terminal\" to do script \"vagrant ssh\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"sudo service supervisord restart\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"exit\" in selected tab of the front window"
+}
+
+function jhu-share () {
+  osascript -e "tell application \"Terminal\" to activate"\
+            -e "tell application \"Terminal\" to do script \"jhu\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"vagrant share\" in selected tab of the front window"
+
+  new-terminal-tab
+
+  osascript -e "tell application \"Terminal\" to do script \"open-wp-config $1\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"open-httpd-config $1\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"restart-httpd\" in selected tab of the front window"\
+            -e "tell application \"Terminal\" to do script \"restart-memcached\" in selected tab of the front window"
 }
 
 # alias stopmysql="sudo launchctl unload -w /Library/LaunchDaemons/com.mysql.mysqld.plist"
