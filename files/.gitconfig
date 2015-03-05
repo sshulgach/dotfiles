@@ -13,8 +13,8 @@
 
 # Change these to your own details, obviously
 [user]
-	name = YOUR NAME
-	email = YOUR EMAIL
+	name = Steven Shulgach
+	email = steven@shulgach.com
 [filter "media"]
 	required = true
 	clean = git media clean %f
@@ -23,7 +23,7 @@
 	default = upstream
 [core]
 	editor = atom -n -w
-	excludesfile = /Users/yourusername/.gitignore_global
+	excludesfile = /Users/sshulgach1/.gitignore_global
 [filter "hawser"]
 	clean = git hawser clean %f
 	smudge = git hawser smudge %f
